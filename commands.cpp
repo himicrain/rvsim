@@ -19,19 +19,6 @@
 using namespace std;
 
 
-string dec2hex1(int i) //将int转成16进制字符串  
-{  
-    stringstream ioss; //定义字符串流  
-    string s_temp; //存放转化后字符  
-    ioss << setiosflags(ios::uppercase) << hex << i; //以十六制(大写)形式输出  
-    //ioss << resetiosflags(ios::uppercase) << hex << i; //以十六制(小写)形式输出//取消大写的设置  
-    ioss >> s_temp;  
-    return s_temp;  
-}  
-
-
-
-
 void command_skip_optional_whitespace(string& command, unsigned int& i) {
   while (i < command.length() && isspace(command[i])) i++;
 }
@@ -248,10 +235,12 @@ void interpret_commands(memory* main_memory, processor* cpu, bool verbose) {
 
 
       if (!num_present) {  // No instruction count value
-      
+      //cout << "指令执行 without" << endl;
+      //cout << "\n\n\n\n\n" << endl;
 	cpu->execute(1, false);  // so just execute one instruction without breakpoint check
       }
       else {
+       // cout << "指令执行" << endl;
 	cpu->execute(num, true);  // Execute specified number of instructions with breakpoint check
       }
     }
@@ -266,9 +255,11 @@ void interpret_commands(memory* main_memory, processor* cpu, bool verbose) {
       }
     }
     else if (command_match_pi(command, i, address)) {  // Check for pi command
+    //cout << "\n\npi ins " << endl;
       cpu->probe_instruction(address);  // Probe instruction at the address
     } 
     else if (command_match_pd(command, i, address)) {  // Check for pd command
+    //cout << "\n\npd ins" << endl;
       cpu->probe_data(address);  // Probe data at the address
     } 
     else if (command_match_l(command, i, filename)) {  // Check for l command

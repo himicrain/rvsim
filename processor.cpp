@@ -17,6 +17,7 @@ using namespace std;
         this->PC = 0x00;
         memset(X,0,sizeof(X));
         BreakPoint = 0xffffffff;
+        this->Instruction_count = 0;
 
       }
 
@@ -79,9 +80,21 @@ uint32_t processor::get_reg( uint32_t num){
             BreakPoint = 0xffffffff;
             break ;
         }
-        uint32_t ret = checkInstruction(this->icache,this,this->X,this->PC,this->icache->read_word(this->PC),this->verbose);
+        //int jjj=0;
+        //cout << "this->icache->    " << this->icache->read_word(this->PC) << endl;
+        //cin >> jjj;
+
+        this->icache->count_cycle();
+
+        //bool save = this->dcache->verbose;
+        //this->dcache->verbose = false;
+        uint32_t ret = checkInstruction(this->dcache,this,this->X,this->PC,this->icache->read_word(this->PC),this->verbose);
+       // this->dcache->verbose = save;
+        
+        //uint32_t ret = checkInstruction(this->dcache,this,this->X,this->PC,0x00000013,this->verbose);
        // cout << hex <<"   PC  " << PC <<  endl;
-        this->Instruction_count ++ ;
+       //this->dcache->verbose = save;
+        
 
         if(breakpoint_check &&( BreakPoint == this->PC)){
             cout << "Breakpoint reached at " << setw(8) << setfill('0') << hex << PC << endl;
@@ -90,10 +103,9 @@ uint32_t processor::get_reg( uint32_t num){
             break ;
         }
 
+        this->Instruction_count ++ ;
         this->PC += 4;
 
-
-        
 
       }
   }
@@ -113,10 +125,18 @@ uint32_t processor::get_reg( uint32_t num){
 
   // Probe the instruction cache interface for an address
   void processor::probe_instruction (uint32_t address){
+
+		this->icache->probe_address(address);
+
   }
 
   // Probe the data cache interface for an address
-  void  processor::probe_data (uint32_t address){}
+  void  processor::probe_data (uint32_t address){
+
+		this->dcache->probe_address(address);
+
+
+  }
 
   uint64_t  processor::get_instruction_count(){
     return this->Instruction_count;

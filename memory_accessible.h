@@ -19,6 +19,9 @@ class memory_accessible {
 
 public:
 
+  bool verbose ;
+  string name;
+
   // Read a word of data from an address
   virtual uint32_t read_word (uint32_t address) = 0;
 
@@ -42,6 +45,8 @@ public:
   // Report access stats
   virtual void report_accesses () = 0;
   virtual void count_cycle()=0;
+
+  virtual void calculate_cycle(int n) = 0;
 
 };
 

@@ -12,16 +12,14 @@
 #include<vector>
 #include<map> 
 #include "memory_accessible.h"
-#define BLOCK_SIZE 1024
+#define BLOCK_SIZE 10240
 using namespace std;
 
 class memory: public memory_accessible {
 
  private:
 
-      //vector <uint32_t*> Blocks;
       map<int,uint32_t*> Blocks;
-      bool verbose;
       bool cycle_reporting;
       unsigned long int address_cycles;
 	    unsigned long int data_cycles;
@@ -32,6 +30,9 @@ class memory: public memory_accessible {
 
 
  public:
+
+ bool verbose;
+ //string name;
 
   // Constructor
   memory(bool verbose,
@@ -72,6 +73,8 @@ class memory: public memory_accessible {
   // Load a hex image file
   bool load_file(string file_name, uint32_t &start_address);
   void count_cycle();
+
+  void calculate_cycle(int n);
 
 };
 

@@ -96,7 +96,7 @@ void EXE_ADDI(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uin
 void EXE_BNE(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint32_t& PC,bool verbose){
     uint32_t imm = getImm_B(ir);
 
-    uint32_t rd = getRD(ir);
+    //uint32_t rd = getRD(ir);
     uint32_t rs1 = getRS1(ir);
     uint32_t rs2 = getRS2(ir);
     if((imm & 0x00001000) == 0x00001000){
@@ -216,7 +216,7 @@ void EXE_JAL(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint
 
 void EXE_BEQ(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint32_t& PC,bool verbose){
     uint32_t imm = getImm_B(ir);
-    int rd = getRD(ir);
+    //int rd = getRD(ir);
     uint32_t rs1 = getRS1(ir);
     uint32_t rs2 = getRS2(ir);
     uint32_t ret = 0x00;
@@ -241,7 +241,7 @@ void EXE_BEQ(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint
 
 void EXE_BLT(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint32_t& PC,bool verbose){
     uint32_t imm = getImm_B(ir);
-    int rd = getRD(ir);
+    //int rd = getRD(ir);
     uint32_t rs1 = getRS1(ir);
     uint32_t rs2 = getRS2(ir);
     if((imm & 0x00001000) == 0x00001000){
@@ -265,7 +265,7 @@ void EXE_BLT(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint
 
 void EXE_BGE(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint32_t& PC,bool verbose){
     uint32_t imm = getImm_B(ir);
-    int rd = getRD(ir);
+    //int rd = getRD(ir);
     uint32_t rs1 = getRS1(ir);
     uint32_t rs2 = getRS2(ir);
     if((imm & 0x00001000) == 0x00001000){
@@ -291,7 +291,7 @@ void EXE_BGE(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint
 
 void EXE_BLTU(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint32_t& PC,bool verbose){
     uint32_t imm = getImm_B(ir);
-    int rd = getRD(ir);
+    //int rd = getRD(ir);
     uint32_t rs1 = getRS1(ir);
     uint32_t rs2 = getRS2(ir);
     if((imm & 0x00001000) == 0x00001000){
@@ -313,7 +313,7 @@ void EXE_BLTU(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uin
 
 void EXE_BGEU(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint32_t& PC,bool verbose){
     uint32_t imm = getImm_B(ir);
-    int rd = getRD(ir);
+    //int rd = getRD(ir);
     uint32_t rs1 = getRS1(ir);
     uint32_t rs2 = getRS2(ir);
     if((imm & 0x00001000) == 0x00001000){
@@ -517,7 +517,7 @@ void EXE_LHU(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint
 
 void EXE_SB(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint32_t& PC,bool verbose){
     uint32_t imm = getImm_S(ir);
-    int rd = getRD(ir);
+    //int rd = getRD(ir);
     uint32_t rs1 = getRS1(ir);
     uint32_t rs2 = getRS2(ir);
     if((imm & 0x00000800) == 0x00000800){
@@ -533,13 +533,18 @@ void EXE_SB(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint3
     uint32_t mask = 0xff;
     uint32_t f = (8*(ret%4));
     mem->write_word(ret>>2<<2,X[rs2]<<f,mask<<f);
+
+    mem->count_cycle();
+
+
+
     cpu->count_cycle(2);
 }
 
 
 void EXE_SH(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint32_t& PC,bool verbose){
     uint32_t imm = getImm_S(ir);
-    int rd = getRD(ir);
+    //int rd = getRD(ir);
     uint32_t rs1 = getRS1(ir);
     uint32_t rs2 = getRS2(ir);
     if((imm & 0x00000800) == 0x00000800){
@@ -552,9 +557,15 @@ void EXE_SH(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint3
     ret = imm + X[rs1];
     uint32_t mask = 0xffff;
 
+
+    mem->count_cycle();
+
     if(ret%4 == 3){
         mem->write_word(ret-3,(X[rs2]&0x000000ff)<<24,0xff000000);
  		mem->write_word(ret+1,(X[rs2]&0xffffff00)>>8,0x000000ff);
+
+            mem->count_cycle();
+
     }else{
  		mem->write_word(ret>>2<<2,X[rs2]<<(8*(ret%4)),mask<<(8*(ret%4)));
  	}
@@ -564,7 +575,7 @@ void EXE_SH(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint3
 
 void EXE_SW(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint32_t& PC,bool verbose){
     uint32_t imm = getImm_S(ir);
-    int rd = getRD(ir);
+    //int rd = getRD(ir);
     uint32_t rs1 = getRS1(ir);
     uint32_t rs2 = getRS2(ir);
     if((imm & 0x00000800) == 0x00000800){
@@ -579,9 +590,13 @@ void EXE_SW(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint3
     uint32_t mask = 0xffffffff;
     uint32_t f = ret % 4;
  	mem->write_word(ret>>2<<2,(X[rs2]&(0xffffffff>>(f*8)))<<(f*8),mask<<(f*8));
+
+    mem->count_cycle();
+
  	if(f)
  	{
  		mem->write_word((ret>>2<<2)+4,(X[rs2]&(0xffffffff<<(32-f*8)))>>(32-f*8),mask>>(32-f*8));
+        mem->count_cycle();
  	}
      cpu->count_cycle(ret % 4 ? 4 : 2);
 }
@@ -931,8 +946,13 @@ void EXE_CSRRCI(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,u
 }
 
 
+void EXE_PI(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint32_t& PC,bool verbose){
+    
+}
 
-
+void EXE_PD(memory_accessible* mem,processor* cpu,uint32_t ir, uint32_t* X,uint32_t& PC,bool verbose){
+    
+}
 
 
 uint32_t checkInstruction(memory_accessible* icache,processor* cpu,uint32_t* X,uint32_t& PC,uint32_t ir,bool verbose){
@@ -941,6 +961,7 @@ uint32_t checkInstruction(memory_accessible* icache,processor* cpu,uint32_t* X,u
         cout << "Fetch: pc = " <<  setw(8) << setfill('0') << hex << PC << ", ir = " <<  setw(8) << setfill('0') << hex << ir << endl; 
 
     }
+   // cout << "ir   ----  " << endl;
 
     if(1){
         if(getOPCODE(ir) == 0x00000013 && getFUNC3(ir) == 0x00000000){

@@ -19,13 +19,13 @@ class processor {
     uint32_t X[32];
     uint32_t PC ;
     uint32_t BreakPoint;
-    uint32_t Instruction_count;
+    uint64_t Instruction_count;
     set<uint32_t> breakpoints;
     memory_accessible* icache;
 	  memory_accessible* dcache;
     bool verbose;
     uint32_t temp_reg;
-    int cycles;
+    uint64_t cycles;
 
 
   // TODO: Add private members here

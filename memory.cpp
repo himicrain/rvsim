@@ -14,12 +14,9 @@
 #include <algorithm>
 #include "memory.h"
 #include <stdio.h>
-#include<cmath>
+#include <cmath>
 #include <string.h>
 using namespace std;
-
-
-
 
 
 // Constructor
@@ -33,31 +30,36 @@ memory::memory(bool verbose,
     this->address_cycles = address_cycles;
     this->data_cycles = data_cycles;
     this->cycles = 0;
+    this->name = "Memory";
 
 }
 
 memory::~memory(){
-  for(int i=0;i<Blocks.size();i++){
-    //delete Blocks[i];
-  }
+
 }
+
 uint32_t memory::read_byte (uint32_t address) {
   uint32_t temp;
-  int block_num = (int)(address/BLOCK_SIZE);
-  int offset = (int)(address%BLOCK_SIZE);
-  int current_size = Blocks.size();
+  int block_num = (int)(address/(BLOCK_SIZE*4));
+  int offset = (int)(address%(BLOCK_SIZE*4));
+  int offset_ = (int)(offset/4);
+  int offset_in = offset%4;
 
   map<int,uint32_t*>::iterator it;
   it = Blocks.find(block_num);
+  uint32_t temp_ ;
 
-  if(it != Blocks.end()){
-     temp = Blocks[block_num][offset];
-  }else{
-    //uint32_t* t_block = new uint32_t[BLOCK_SIZE]{0};
+  if(it == Blocks.end()){
      Blocks.insert(pair<int,uint32_t*>(block_num,new uint32_t[BLOCK_SIZE]{0}));
   }
 
-  temp = Blocks[block_num][offset];
+  temp_ = Blocks[block_num][offset_] ;
+
+  int t = offset_in*8;
+
+  uint32_t m1 = 0xff000000 >> t;
+
+  temp = (temp_ & m1) >> (24-t);
 
   return temp;
 
@@ -67,62 +69,57 @@ uint32_t memory::read_byte (uint32_t address) {
 // Read a word of data from an address
 uint32_t memory::read_word (uint32_t address) {
   // TODO: ...
-
   uint32_t temp;
-  int block_num = (int)(address/BLOCK_SIZE);
-  int offset = (int)(address%BLOCK_SIZE);
-  int current_size = Blocks.size();
+  int block_num = (int)(address/(BLOCK_SIZE*4));
+  int offset = (int)(address%(BLOCK_SIZE*4));
+
+  int offset_ = (int)(offset/4);
+
+  //int current_size = Blocks.size();
   map<int,uint32_t*>::iterator it;
   it = Blocks.find(block_num);
   if(it == Blocks.end()){
       Blocks.insert(pair<int,uint32_t*>(block_num,new uint32_t[BLOCK_SIZE]{0}));
    }
 
-  //Blocks[block_num] = new uint32_t[BLOCK_SIZE];
-  temp = (Blocks[block_num][offset] )
-        +(Blocks[block_num][offset+1] << 8)
-        +(Blocks[block_num][offset+2] << 16)
-        +((Blocks[block_num][offset+3])<< 24);
-  if(this->verbose){
-          cout << "Memory read word: address = " << hex << setw(8) << setfill('0') << address  << ", data = " << setw(8) << setfill('0') << hex << temp << endl; 
-  }
+  temp = Blocks[block_num][offset_];
+ 
   return temp;
 
 
 }
 void memory::write_byte(uint32_t address, uint32_t data, uint32_t mask) {
-  uint32_t temp_data = (data & mask);
-   bool tb = this->verbose;
-  this->verbose = false;
-  uint32_t temp_old_data = (this->read_byte(address) & (~mask));
-  this->verbose = tb;
-  uint32_t new_word = temp_data | temp_old_data;
-  int block_num = (int)(address/BLOCK_SIZE);
-  int offset = (int)(address%BLOCK_SIZE);
-  int current_size = Blocks.size();
-/*
-  for(int i=current_size;i<=block_num;i++){
-        //Blocks.push_back(new uint32_t[BLOCK_SIZE]);
-     if(Blocks[current_size] == NULL){
-        uint32_t block[BLOCK_SIZE]={0};
-        Blocks.push_back(NULL);
-    }
-  }
-   Blocks[block_num] = new uint32_t[BLOCK_SIZE];*/
-   //uint32_t* temp_block = Blocks.find(block_num);
+  
+  int block_num = (int)(address/(BLOCK_SIZE*4));
+
+  int offset = (int)(address%(BLOCK_SIZE*4));
+  int offset_ = (int)(offset/4);
+  int offset_in = offset%4;
 
   map<int,uint32_t*>::iterator it;
   it = Blocks.find(block_num);
 
-  if(it != Blocks.end()){
-      Blocks[block_num][offset] = (new_word & 0x000000ff);
-   }
-   //Blocks[block_num][offset] = (new_word & 0x000000ff);
+  uint32_t ms = 0xff000000 >> (24-offset_in*8);
+  uint32_t ms1 = ~ms;
 
+  uint32_t md = data << ((offset_in*8));
+
+  if(it == Blocks.end()){
+     Blocks.insert(pair<int,uint32_t*>(block_num,new uint32_t[BLOCK_SIZE]{0}));
+  }
+
+
+  uint32_t old_data = Blocks[block_num][offset_];
+  uint32_t new_word = (old_data & ms1) | md;
+
+  Blocks[block_num][offset_] = new_word;
+
+   //Blocks[block_num][offset] = (new_word & 0x000000ff);
 
 }
 // Write a word of data to an address, mask contains 1s for bytes to be updated
 void memory::write_word (uint32_t address, uint32_t data, uint32_t mask) {
+
   // TODO: ...
   
   uint32_t temp_data = (data & mask);
@@ -132,57 +129,34 @@ void memory::write_word (uint32_t address, uint32_t data, uint32_t mask) {
   this->verbose = tb;
   uint32_t new_word = temp_data | temp_old_data;
 
-  int block_num = (int)(address/BLOCK_SIZE);
-  int offset = (int)(address%BLOCK_SIZE);
-  int current_size = Blocks.size();
+  int offset = (int)(address%(BLOCK_SIZE*4));
+  int offset_ = (int)(offset/4);
 
-  /*for(int i=current_size;i<=block_num;i++){
-       // Blocks.push_back(new uint32_t[BLOCK_SIZE]);
-    if(Blocks[current_size] == NULL){
-        uint32_t block[BLOCK_SIZE]={0};
-        Blocks.push_back(NULL);
-    }
-  }
-  Blocks[block_num] = new uint32_t[BLOCK_SIZE];*/
+  int block_num = (int)(address/(BLOCK_SIZE*4));
 
-
-  //uint32_t* temp_block = Blocks.find(block_num);
   map<int,uint32_t*>::iterator it;
   it = Blocks.find(block_num);
   if(it != Blocks.end()){
-        Blocks[block_num][offset] = (new_word & 0x000000ff);
-        Blocks[block_num][offset+1] = (new_word & 0x0000ff00)>>8;
-        Blocks[block_num][offset+2] = (new_word & 0x00ff0000)>>16;
-        Blocks[block_num][offset+3] = (new_word & 0xff000000)>>24;
+        Blocks[block_num][offset_] = new_word;
    }
-
-  if(this->verbose){
-          cout << "Memory write word: address = " << hex << setw(8) << setfill('0') << address  << ", data = " << setw(8) << setfill('0') << hex << data << ", mask = "<< setw(8) << setfill('0') << hex <<mask << endl; 
-  }
-
-
-/*
-  Blocks[block_num][offset] = (new_word & 0x000000ff);
-  Blocks[block_num][offset+1] = (new_word & 0x0000ff00)>>8;
-  Blocks[block_num][offset+2] = (new_word & 0x00ff0000)>>16;
-  Blocks[block_num][offset+3] = (new_word & 0xff000000)>>24;*/
-  /*
-  uint32_t temp_data = (data & mask);
-  int block_num = (int)(address/BLOCK_SIZE);
-  int offset = (int)(address%BLOCK_SIZE);
-  int current_size = Blocks.size();
-
-  for(int i=current_size;i<=block_num;i++){
-        Blocks.push_back(new uint32_t[BLOCK_SIZE]);
-  }
-
-  Blocks[block_num][offset] = temp_data;*/
-
 }
 
 // Read a block of data of a given size, starting at an address
 // Data size is a power of 2 number of words, and address is block aligned.
 void memory::read_block (uint32_t address, uint32_t data[], unsigned int data_size) {
+
+  if(this->cycle_reporting){
+    this->calculate_cycle(data_size);
+  }
+
+  for(int i=0;i<data_size;i++){
+    data[i] = this->read_word(address+i*4);
+  }
+  if(this->verbose){
+      cout << "Memory read block: address = " << hex << setw(8) << setfill('0') << address << ", " << dec <<  data_size << " words" << endl;
+  }
+  
+
   // TODO: ...
 }
 
@@ -190,6 +164,13 @@ void memory::read_block (uint32_t address, uint32_t data[], unsigned int data_si
 // Data size is a power of 2 number of words, and address is block aligned.
 void memory::write_block (uint32_t address, uint32_t data[], unsigned int data_size) {
   // TODO: ...
+  for(int i=0;i<data_size;i++){
+      this->write_word(address+i*4,data[i], 0xffffffff);
+  }
+  if(this->verbose){
+         cout << "Memory write block: address = " << hex << setw(8) << setfill('0') << address  << ", " << dec << data_size << " words" << endl; 
+  }
+
 }
 
 // Display on cout whether the address is present, and if so, display the data
@@ -208,11 +189,8 @@ void memory::show_address (uint32_t address) {
   // TODO: ...
   //char r[10];
   uint32_t t = read_word(address);
-  //sprintf(r,"%x",t);
-  //for(int i=0;i<(8-strlen(r));i++){
-   // cout <<"0";
-  //}
-  cout <<hex << setw(8) << setfill('0') <<  t << endl;
+  cout  << "Memory: "  <<hex << setw(8) << setfill('0') <<  t << endl;
+
 }
 
 // Set the word of data at an address
@@ -224,11 +202,21 @@ void memory::set_address (uint32_t address, uint32_t data) {
 // Return the accumulated number of cycles for read accesses
 unsigned long int memory::get_read_cycle_count () {
   // TODO: ...
-  return cycles;
+  return this->cycles;
 }
 
+void memory::calculate_cycle(int n){
+  int t = (this->address_cycles + this->data_cycles*n) ;
+      if(t==0){
+          this->cycles ++;
+      }else{
+          this->cycles += t;
+      }
+}
 void memory::count_cycle(){
-  cycles += data_cycles + address_cycles;
+  //this->cycles += (this->data_cycles + this->address_cycles);
+  //this->calculate_cycle();
+    
 }
 
 // Load a hex image file
@@ -283,8 +271,7 @@ bool memory::load_file(string file_name, uint32_t &start_address) {
     * code to load data
     */
    //cout << hex << "load_address  " << load_address<< " record_data " << record_data << " mask " << load_mask << endl;
-
-    write_byte(load_address,record_data,0x000000ff);
+    write_byte(load_address,record_data,0x000000ff );
    // cout << hex << "load_address  " << load_address<< " read   " << read_byte(load_address) << endl;
 
 	  byte_count++;

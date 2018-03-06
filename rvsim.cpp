@@ -202,7 +202,6 @@ int main(int argc, char* argv[]) {
     } else {
 	level1_icache = main_memory;
 	level1_dcache = main_memory;
-	//cout << "main----------------------" << level1_icache->read_word(0x00002004)<<endl;
     }
     cpu = new processor (level1_icache, level1_dcache, verbose);
 
